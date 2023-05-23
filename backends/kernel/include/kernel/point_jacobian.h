@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda/math/math.h>
+#include <kernel/math/math.h>
 
 void kf_jacobian(
     rmagine::Quaterniond rot,

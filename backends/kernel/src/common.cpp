@@ -1,4 +1,4 @@
-#include <cuda/common.h>
+#include <kernel/common.h>
 
 #ifdef USE_CUDA
 

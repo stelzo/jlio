@@ -1,4 +1,4 @@
-#include <cuda/math/matrixXxX.h>
+#include <kernel/math/matrixXxX.h>
 #include <Eigen/Dense>
 
 template <typename T>

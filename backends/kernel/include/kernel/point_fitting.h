@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda/math/math.h>
+#include <kernel/math/math.h>
 
 int kf_point_state_step(
     void *_body_cloud, size_t body_cloud_size,

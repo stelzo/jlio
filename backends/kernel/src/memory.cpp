@@ -1,4 +1,4 @@
-#include <cuda/memory.h>
+#include <kernel/memory.h>
 #include <iostream>
 
 namespace jlio
@@ -43,6 +43,7 @@ namespace jlio
     {
 #ifdef USE_CUDA
         CHECK_CUDA_ERROR(cudaMemcpy(dst, src, count, jlio::cudaMemcpyKindMap[kind]));
+        //dst = src; // TODO only on jetson: no need to copy to and from device when using unified memory; but just assigning the pointer would make free fail
 #else
         std::memcpy(dst, src, count);
 #endif

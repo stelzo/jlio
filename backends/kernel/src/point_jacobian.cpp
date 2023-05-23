@@ -4,15 +4,15 @@
  * @date 2022-05-21
  */
 
-#include <cuda/point_jacobian.h>
-#include <cuda/point.h>
+#include <kernel/point_jacobian.h>
+#include <kernel/point.h>
 
-#include <cuda/common.h>
-#include <cuda/memory.h>
+#include <kernel/common.h>
+#include <kernel/memory.h>
 
 JLIO_KERNEL
-void krnl_jacobian(PointXYZINormal_CUDA *laser_cloud_ori, size_t laser_cloud_ori_size,
-                   PointXYZINormal_CUDA *corr_normvect, size_t corr_normvect_size,
+void krnl_jacobian(jlio::PointXYZINormal *laser_cloud_ori, size_t laser_cloud_ori_size,
+                   jlio::PointXYZINormal *corr_normvect, size_t corr_normvect_size,
                    rmagine::Quaterniond rot,
                    rmagine::Vector3d offset_T_L_I,
                    rmagine::Quaterniond offset_R_L_I,
@@ -47,7 +47,7 @@ void krnl_jacobian(PointXYZINormal_CUDA *laser_cloud_ori, size_t laser_cloud_ori
     rmagine::Vector3d point_this = offset_R_L_I * v + offset_T_L_I;
 
     /*** get the normal vector of closest surface/corner ***/
-    const PointXYZINormal_CUDA &norm_p = corr_normvect[i];
+    const jlio::PointXYZINormal &norm_p = corr_normvect[i];
     rmagine::Vector3d norm_vec(norm_p.x, norm_p.y, norm_p.z);
 
     /*** calculate the Measuremnt Jacobian matrix H ***/
@@ -106,8 +106,8 @@ void kf_jacobian(
     rmagine::MatrixXd &h,
     size_t effct_feat_num)
 {
-    PointXYZINormal_CUDA *laser_cloud_ori = (PointXYZINormal_CUDA *)_laser_cloud_ori;
-    PointXYZINormal_CUDA *corr_normvect = (PointXYZINormal_CUDA *)_corr_normvect;
+    jlio::PointXYZINormal *laser_cloud_ori = (jlio::PointXYZINormal *)_laser_cloud_ori;
+    jlio::PointXYZINormal *corr_normvect = (jlio::PointXYZINormal *)_corr_normvect;
     constexpr size_t THREADS_PER_BLOCK = 1024;
 
 #ifndef USE_CUDA

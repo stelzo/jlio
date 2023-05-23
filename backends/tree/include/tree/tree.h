@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
-#include <cuda/memory.h>
+#include <kernel/memory.h>
 
 #define EPSS 1e-6
 #define Minimal_Unbalanced_Tree_Size 10

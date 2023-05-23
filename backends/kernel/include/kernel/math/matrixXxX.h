@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <cassert>
-#include <cuda/memory.h>
-#include <cuda/common.h>
+#include <kernel/memory.h>
+#include <kernel/common.h>
 
 namespace rmagine
 {

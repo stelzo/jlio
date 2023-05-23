@@ -4,12 +4,12 @@
  * @date 2022-05-21
  */
 
-#include <cuda/point_fitting.h>
-#include <cuda/point.h>
-#include <cuda/pca.h>
-#include <cuda/common.h>
-#include <cuda/kdtree.h>
-#include <cuda/memory.h>
+#include <kernel/point_fitting.h>
+#include <kernel/point.h>
+#include <kernel/pca.h>
+#include <kernel/common.h>
+#include <kernel/kdtree.h>
+#include <kernel/memory.h>
 
 #ifndef USE_CUDA
 #include <mutex>
@@ -34,7 +34,7 @@ namespace jlio
 }
 
 JLIO_INLINE_FUNCTION
-float calc_box_dist_gpu(KD_TREE_NODE<PointXYZINormal_CUDA> *node, PointXYZINormal_CUDA point)
+float calc_box_dist_gpu(KD_TREE_NODE<jlio::PointXYZINormal> *node, jlio::PointXYZINormal point)
 {
     if (node == nullptr)
         return INFINITY;
@@ -77,13 +77,13 @@ float calc_box_dist_gpu(KD_TREE_NODE<PointXYZINormal_CUDA> *node, PointXYZINorma
 }
 
 JLIO_INLINE_FUNCTION
-float calc_dist_gpu(PointXYZINormal_CUDA a, PointXYZINormal_CUDA b)
+float calc_dist_gpu(jlio::PointXYZINormal a, jlio::PointXYZINormal b)
 {
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
 }
 
 JLIO_FUNCTION
-void Push_Down(KD_TREE_NODE<PointXYZINormal_CUDA> *root)
+void Push_Down(KD_TREE_NODE<jlio::PointXYZINormal> *root)
 {
     if (root == nullptr)
         return;
@@ -128,7 +128,7 @@ void Push_Down(KD_TREE_NODE<PointXYZINormal_CUDA> *root)
 }
 
 JLIO_FUNCTION
-void Search(KD_TREE_NODE<PointXYZINormal_CUDA> *root, int k_nearest, PointXYZINormal_CUDA point, MANUAL_HEAP_GPU *q, float max_dist)
+void Search(KD_TREE_NODE<jlio::PointXYZINormal> *root, int k_nearest, jlio::PointXYZINormal point, MANUAL_HEAP_GPU *q, float max_dist)
 {
     if (root == nullptr || root->tree_deleted)
     {
@@ -139,8 +139,8 @@ void Search(KD_TREE_NODE<PointXYZINormal_CUDA> *root, int k_nearest, PointXYZINo
     float dist_to_kth_neighbor = FLT_MAX;
 
     bool bt = false;
-    KD_TREE_NODE<PointXYZINormal_CUDA> *prev_node = nullptr;
-    KD_TREE_NODE<PointXYZINormal_CUDA> *current_node = root;
+    KD_TREE_NODE<jlio::PointXYZINormal> *prev_node = nullptr;
+    KD_TREE_NODE<jlio::PointXYZINormal> *current_node = root;
 
     do
     {
@@ -231,15 +231,15 @@ void Search(KD_TREE_NODE<PointXYZINormal_CUDA> *root, int k_nearest, PointXYZINo
 }
 
 JLIO_FUNCTION
-void Nearest_Search(void *root, PointXYZINormal_CUDA point, size_t k_nearest,
-                    PointXYZINormal_CUDA *Nearest_Points, int *Nearest_Points_Size,
+void Nearest_Search(void *root, jlio::PointXYZINormal point, size_t k_nearest,
+                    jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                     float *Point_Distance, size_t *Point_Distance_Size,
                     float max_dist)
 {
     MANUAL_HEAP_GPU q;
     q.init();
 
-    KD_TREE_NODE<PointXYZINormal_CUDA> *tree = (KD_TREE_NODE<PointXYZINormal_CUDA> *)root;
+    KD_TREE_NODE<jlio::PointXYZINormal> *tree = (KD_TREE_NODE<jlio::PointXYZINormal> *)root;
     Search(tree, k_nearest, point, &q, max_dist);
 
     int k_found = jlio::min((int)k_nearest, int(q.size()));
@@ -267,16 +267,16 @@ void Nearest_Search(void *root, PointXYZINormal_CUDA point, size_t k_nearest,
 }
 
 JLIO_KERNEL
-void krnl_raw_nearest_search(void *root, PointXYZINormal_CUDA *point, size_t k_nearest,
-                             PointXYZINormal_CUDA *Nearest_Points, int *Nearest_Points_Size,
+void krnl_raw_nearest_search(void *root, jlio::PointXYZINormal *point, size_t k_nearest,
+                             jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                              float *Point_Distance, size_t *Point_Distance_Size,
                              float max_dist)
 {
     Nearest_Search(root, *point, k_nearest, Nearest_Points, Nearest_Points_Size, Point_Distance, Point_Distance_Size, max_dist);
 }
 
-void Raw_Nearest_Search(void *root, PointXYZINormal_CUDA *point, size_t k_nearest,
-                        PointXYZINormal_CUDA *Nearest_Points, int *Nearest_Points_Size,
+void Raw_Nearest_Search(void *root, jlio::PointXYZINormal *point, size_t k_nearest,
+                        jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                         float *Point_Distance, size_t *Point_Distance_Size,
                         float max_dist)
 {
@@ -351,10 +351,10 @@ void krnl_point_kf_state(void *_body_cloud, size_t body_cloud_size,
         return;
 
     // conversion to cuda types with same memory layout
-    PointXYZINormal_CUDA *body_cloud = (PointXYZINormal_CUDA *)_body_cloud;
-    PointXYZINormal_CUDA *world_cloud = (PointXYZINormal_CUDA *)_world_cloud;
-    PointXYZINormal_CUDA *nearest_points = (PointXYZINormal_CUDA *)_nearest_points;
-    PointXYZINormal_CUDA *normvec = (PointXYZINormal_CUDA *)_normvec;
+    jlio::PointXYZINormal *body_cloud = (jlio::PointXYZINormal *)_body_cloud;
+    jlio::PointXYZINormal *world_cloud = (jlio::PointXYZINormal *)_world_cloud;
+    jlio::PointXYZINormal *nearest_points = (jlio::PointXYZINormal *)_nearest_points;
+    jlio::PointXYZINormal *normvec = (jlio::PointXYZINormal *)_normvec;
 
     constexpr size_t NUM_MATCH_POINTS = 5; // hardcoded everywhere but defines are not allowed in device code
 
@@ -430,11 +430,11 @@ void krnl_point_kf_state(void *_body_cloud, size_t body_cloud_size,
 }
 
 JLIO_KERNEL
-void krnl_filter_selected_surf(PointXYZINormal_CUDA *body_cloud, size_t body_cloud_size,
-                               PointXYZINormal_CUDA *normvec, size_t normvec_size,
+void krnl_filter_selected_surf(jlio::PointXYZINormal *body_cloud, size_t body_cloud_size,
+                               jlio::PointXYZINormal *normvec, size_t normvec_size,
                                bool *point_selected_surf,
-                               PointXYZINormal_CUDA *laser_cloud_ori, size_t laser_cloud_ori_size,
-                               PointXYZINormal_CUDA *corr_normvect, size_t corr_normvect_size,
+                               jlio::PointXYZINormal *laser_cloud_ori, size_t laser_cloud_ori_size,
+                               jlio::PointXYZINormal *corr_normvect, size_t corr_normvect_size,
                                int *effct_feat_num
 #ifndef USE_CUDA
                                ,
@@ -484,10 +484,10 @@ int kf_point_state_step(
     void *_corr_normvect, size_t corr_normvect_size,
     bool converge)
 {
-    PointXYZINormal_CUDA *body_cloud = (PointXYZINormal_CUDA *)_body_cloud;
-    PointXYZINormal_CUDA *normvec = (PointXYZINormal_CUDA *)_normvec;
-    PointXYZINormal_CUDA *laser_cloud_ori = (PointXYZINormal_CUDA *)_laser_cloud_ori;
-    PointXYZINormal_CUDA *corr_normvect = (PointXYZINormal_CUDA *)_corr_normvect;
+    jlio::PointXYZINormal *body_cloud = (jlio::PointXYZINormal *)_body_cloud;
+    jlio::PointXYZINormal *normvec = (jlio::PointXYZINormal *)_normvec;
+    jlio::PointXYZINormal *laser_cloud_ori = (jlio::PointXYZINormal *)_laser_cloud_ori;
+    jlio::PointXYZINormal *corr_normvect = (jlio::PointXYZINormal *)_corr_normvect;
 
     constexpr size_t THREADS_PER_BLOCK = 1024;
 

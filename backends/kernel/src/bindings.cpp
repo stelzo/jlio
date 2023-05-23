@@ -1,12 +1,12 @@
-#include <cuda/bindings.h>
-#include <cuda/point.h>
+#include <kernel/bindings.h>
+#include <kernel/point.h>
 
-#include <cuda/point_fitting.h>
-#include <cuda/point_jacobian.h>
+#include <kernel/point_fitting.h>
+#include <kernel/point_jacobian.h>
 
-#include <cuda/eigen_mapping.h>
+#include <kernel/eigen_mapping.h>
 
-#include <cuda/math/math.h>
+#include <kernel/math/math.h>
 
 int step_kalman(
     void *_body_cloud, size_t body_cloud_size,

@@ -4,7 +4,7 @@
 #include "point.h"
 #include <limits> // for infinity
 #include <math.h>
-#include <cuda/common.h>
+#include <kernel/common.h>
 
 #define K_NEAREST = 5; // TODO still hardcoded in kernels
 
@@ -36,7 +36,7 @@ struct KD_TREE_NODE
 
 struct PointType_CMP_GPU
 {
-    PointXYZINormal_CUDA point;
+    jlio::PointXYZINormal point;
     float dist = 0.0;
 
     JLIO_FUNCTION
@@ -49,7 +49,7 @@ struct PointType_CMP_GPU
     }
 
     JLIO_FUNCTION
-    PointType_CMP_GPU(PointXYZINormal_CUDA p, float d = std::numeric_limits<float>::infinity())
+    PointType_CMP_GPU(jlio::PointXYZINormal p, float d = std::numeric_limits<float>::infinity())
     {
         this->point = p;
         this->dist = d;
@@ -169,12 +169,12 @@ struct MANUAL_HEAP_GPU
 };
 
 JLIO_FUNCTION
-void Nearest_Search(void *root, PointXYZINormal_CUDA point, size_t k_nearest,
-                    PointXYZINormal_CUDA *Nearest_Points, int *Nearest_Points_Size,
+void Nearest_Search(void *root, jlio::PointXYZINormal point, size_t k_nearest,
+                    jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                     float *Point_Distance, size_t *Point_Distance_Size,
                     float max_dist);
 
-void Raw_Nearest_Search(void *root, PointXYZINormal_CUDA *point, size_t k_nearest,
-                        PointXYZINormal_CUDA *Nearest_Points, int *Nearest_Points_Size,
+void Raw_Nearest_Search(void *root, jlio::PointXYZINormal *point, size_t k_nearest,
+                        jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                         float *Point_Distance, size_t *Point_Distance_Size,
                         float max_dist);

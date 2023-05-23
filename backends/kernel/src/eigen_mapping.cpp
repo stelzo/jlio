@@ -1,4 +1,4 @@
-#include <cuda/eigen_mapping.h>
+#include <kernel/eigen_mapping.h>
 /**
  * Copies(!) to a Eigen dynamic matrix.
  * TODO change to reinterpret castable structure

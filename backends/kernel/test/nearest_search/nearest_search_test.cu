@@ -20,7 +20,7 @@ PointType createPoint(float x, float y, float z) {
     return p;
 }
 
-float calc_dist(PointXYZINormal_CUDA a, PointXYZINormal_CUDA b) {
+float calc_dist(jlio::PointXYZINormal a, jlio::PointXYZINormal b) {
     float dist = 0.0f;
     dist = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
     return dist;
@@ -73,19 +73,19 @@ TEST(ikdTree, nearestSearch) {
     ikdTree.Build(d_points);
     ikdTree.consistent();
 
-    PointXYZINormal_CUDA query;
+    jlio::PointXYZINormal query;
     query.x = 0;
     query.y = 0;
     query.z = 0;
 
-    PointXYZINormal_CUDA* d_query;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&d_query, sizeof(PointXYZINormal_CUDA)));
+    jlio::PointXYZINormal* d_query;
+    CHECK_CUDA_ERROR(cudaMallocManaged(&d_query, sizeof(jlio::PointXYZINormal)));
     d_query[0] = query;
 
-    PointXYZINormal_CUDA* Nearest_Points;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&Nearest_Points, k * sizeof(PointXYZINormal_CUDA)));
+    jlio::PointXYZINormal* Nearest_Points;
+    CHECK_CUDA_ERROR(cudaMallocManaged(&Nearest_Points, k * sizeof(jlio::PointXYZINormal)));
     for (size_t i = 0; i < k; i++) {
-        Nearest_Points[i] = PointXYZINormal_CUDA();
+        Nearest_Points[i] = jlio::PointXYZINormal();
     }
 
     int* nearest_size;

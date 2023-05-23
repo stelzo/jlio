@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef USE_CUDA
-#include <cuda/common.h>
+#include <kernel/common.h>
 #else
 #include <cstring>
 #include <cstdlib>

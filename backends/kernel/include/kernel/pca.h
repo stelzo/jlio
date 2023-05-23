@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda/math/math.h>
+#include <kernel/math/math.h>
 
 #ifdef USE_CUDA
 #include <cusolverDn.h>

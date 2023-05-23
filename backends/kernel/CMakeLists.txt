@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(cuda VERSION 0.1.0)
+project(kernel VERSION 0.1.0)
 
 if(WITH_THREADING)
   add_definitions(-DUSE_THREADING)
@@ -84,6 +84,7 @@ add_library(kernels
  src/point_fitting.cpp
  src/common.cpp
  src/memory.cpp
+ src/preprocess.cpp
  )
  if(TBB_FOUND)
  target_link_libraries(kernels PRIVATE ${TBB_LIBRARIES})
