@@ -8,12 +8,9 @@
 #endif
 
 JLIO_INLINE_FUNCTION
-float squared_distance(const jlio::PointXYZINormal &p1, const jlio::PointXYZINormal &p2)
+float squared_distance(const jlio::PointXYZINormal &p)
 {
-    float dx = p1.x - p2.x;
-    float dy = p1.y - p2.y;
-    float dz = p1.z - p2.z;
-    return dx * dx + dy * dy + dz * dz;
+    return p.x * p.x + p.y * p.y + p.z * p.z;
 }
 
 JLIO_KERNEL
@@ -45,8 +42,8 @@ void krnl_filter_points_xyziring(unsigned char* raw_data, uint32_t raw_data_size
     result.y = res_ptr->y;
     result.z = res_ptr->z;
 
-    float dist = squared_distance(result, jlio::PointXYZINormal{0, 0, 0, 0, 0, 0, 0, 0});
-    if (dist < near_dist * near_dist || dist > far_dist * far_dist)
+    float dist = squared_distance(result);
+    if (dist < near_dist * near_dist || dist > far_dist * far_dist) // saving the sqrt, so we need to square the input distance
     {
         return;
     }
@@ -59,13 +56,13 @@ void krnl_filter_points_xyziring(unsigned char* raw_data, uint32_t raw_data_size
 
     #ifndef USE_CUDA
     mtx.lock();
-    int val = *out_size;
+    int size_before_add = *out_size;
     #else
-    int val = atomicAdd(out_size, 1);
+    int size_before_add = atomicAdd(out_size, 1);
     #endif
-    output_buffer[val] = result;
+    output_buffer[size_before_add] = result;
     #ifndef USE_CUDA
-    *out_size = val + 1;
+    *out_size = size_before_add + 1;
     mtx.unlock();
     #endif
 }

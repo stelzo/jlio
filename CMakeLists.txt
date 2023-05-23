@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(jlio VERSION 0.1.0)
 
-option(WITH_CUDA "With CUDA support" true)
-option(WITH_THREADING "When CUDA is not used, distribute work to all cores, otherwise single core." true)
-option(BUILD_TESTS "Build tests" false)
-option(LTO_OPT "Enable LTO" false)
-option(BUILD_LIBS "Build libraries" true)
+option(BUILD_TESTS "Build tests" False)
+option(LTO_OPT "Enable LTO" False)
+option(BUILD_LIBS "Build libraries" True)
 
 if (LTO_OPT)
   MESSAGE(STATUS "using Link Time Optimizations, this will take time...")

@@ -1,30 +1,49 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(kernel VERSION 0.1.0)
 
-if(WITH_THREADING)
-  add_definitions(-DUSE_THREADING)
-  message(STATUS "Building with threading support.")
-else()
-  message(STATUS "Building without threading support.")
-endif()
+
+option(WITH_CUDA "With CUDA support" true)
+option(WITH_THREADING "When CUDA is not used, distribute work to all cores, otherwise single core." true)
 
 set(TBB_VERSION 2021.9.0)
 
-find_package(CUDA QUIET)
-if(WITH_CUDA AND CUDA_FOUND)
-    add_definitions(-DUSE_CUDA)
-    set(CUDA_ENABLE ON)
-    enable_language(CUDA)
-    message(STATUS "CUDA is available. Building with CUDA support.")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3;-std=c++11)  # Set additional NVCC flags if needed
+find_package(Threads)
+
+find_package(CUDAToolkit)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(WITH_CUDA AND CUDAToolkit_FOUND)
+    include(CheckLanguage)
+    check_language(CUDA REQUIRED)
+ 
+    set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE}) # override the CUDA version to the one found by the toolkit package
+    message(STATUS "-::--::- CUDA support enabled -::--::-")
+
+    add_definitions(-DUSE_CUDA) # used in the source code
+    if(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 11)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    endif()
+
+    set(CMAKE_CUDA_ARCHITECTURES 75)
+
+    enable_language(CUDA)    
 else()
-    message(STATUS "CUDA is not available. Using CPU Threadpools with TBB.")
+    if(WITH_THREADING)
+      add_definitions(-DUSE_THREADING)
+      message(STATUS "-::--::- CPU only [all cores] -::--::-")
+    else()
+      message(STATUS "-::--::- CPU only [single core] -::--::-")
+    endif()
 
     find_package(TBB ${TBB_VERSION} QUIET)
     if(TBB_FOUND)
         message(STATUS "TBB ${TBB_VERSION} found.")
     else()
-        message(STATUS "TBB ${TBB_VERSION} not found. Downloading and building TBB ${TBB_VERSION}.")
+        message(STATUS "TBB ${TBB_VERSION} not found. Will be compiled when compiling.")
     
         include(ExternalProject)
         ExternalProject_Add(
@@ -42,22 +61,14 @@ else()
       endif()
 endif()
 
-add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
+include_directories(include)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-if(CUDA_ENABLE)
-include_directories(
-  include
-  ${CUDA_INCLUDE_DIRS}
-)
+if(CMAKE_CUDA_COMPILER)
+  include_directories(${CUDA_INCLUDE_DIRS})
 else()
 
 find_package(PCL 1.8 REQUIRED QUIET)
 include_directories(
-  include
   ${TBB_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )
@@ -75,8 +86,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
 find_package(Eigen3 REQUIRED QUIET)
 
-if(CUDA_ENABLE)
-set_source_files_properties(src/point_jacobian.cpp src/point_fitting.cpp PROPERTIES LANGUAGE CUDA)
+if(CMAKE_CUDA_COMPILER)
+  set_source_files_properties(src/point_jacobian.cpp src/point_fitting.cpp PROPERTIES LANGUAGE CUDA)
 endif()
 
 add_library(kernels
@@ -91,18 +102,23 @@ add_library(kernels
 endif()
 
 add_library(bindings
- src/bindings.cpp
- src/eigen_mapping.cpp
- )
- target_include_directories(bindings PUBLIC ${EIGEN3_INCLUDE_DIR} ../kalman/include)
- if(TBB_FOUND)
+  src/bindings.cpp
+  src/eigen_mapping.cpp
+)
+
+target_include_directories(bindings PUBLIC
+  ${EIGEN3_INCLUDE_DIR}
+  ../kalman/include
+)
+
+if(TBB_FOUND)
  target_link_libraries(bindings PRIVATE
- kernels ${TBB_LIBRARIES} kalman
- )
- else()
+  kernels ${TBB_LIBRARIES} kalman
+)
+else()
   target_link_libraries(bindings PRIVATE
   kernels kalman
-  )
+)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")

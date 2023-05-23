@@ -21,7 +21,7 @@ add_library(ikdtree
   src/tree.cpp
 )
 target_link_libraries(ikdtree
-  cuda
+  kernel
   ${CMAKE_THREAD_LIBS_INIT}
   ${PCL_LIBRARIES}
 )
