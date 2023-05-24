@@ -56,7 +56,7 @@ class KD_TREE
 
     // using MANUAL_Q_ = MANUAL_Q<typename PointType>;
 public:
-    using PointVector = std::vector<PointType, Eigen::aligned_allocator<PointType>>;
+    using PointVector = std::vector<PointType>;
     using Ptr = std::shared_ptr<KD_TREE<PointType>>;
 
     std::mutex ikd_mutex;

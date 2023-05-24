@@ -80,16 +80,16 @@ void filter_map_ouster(const u_int8_t* source, uint32_t source_size, uint32_t po
 
     // working buffer on GPU where the input point cloud lives
     u_int8_t* input_raw_buffer = nullptr;
-    jlio::malloc(&input_raw_buffer, source_size);
+    jlio::malloc((void**)&input_raw_buffer, source_size);
     jlio::memcpy(input_raw_buffer, reinterpret_cast<const void*>(source), static_cast<size_t>(source_size), jlio::cudaMemcpyHostToDevice);
 
     // output buffer with reduced, filtered size
     jlio::PointXYZINormal* output_pt_buffer = nullptr;
-    jlio::malloc(&output_pt_buffer, input_points_len * sizeof(jlio::OusterPoint)); // allocate enough, because we know the upper size beforehand
+    jlio::malloc((void**)&output_pt_buffer, input_points_len * sizeof(jlio::OusterPoint)); // allocate enough, because we know the upper size beforehand
 
     // size for the result as return but needed in the kernel
     uint32_t* out_size_device = nullptr;
-    jlio::malloc(&out_size_device, sizeof(uint32_t));
+    jlio::malloc((void**)&out_size_device, sizeof(uint32_t));
     jlio::memset(out_size_device, 0, sizeof(uint32_t));
     
 #ifdef USE_CUDA
@@ -111,7 +111,7 @@ void filter_map_ouster(const u_int8_t* source, uint32_t source_size, uint32_t po
     jlio::memcpy(out_size, out_size_device, sizeof(uint32_t), jlio::cudaMemcpyDeviceToHost);
     jlio::free(out_size_device);
 
-    jlio::malloc(&out, sizeof(jlio::PointXYZINormal) * (*out_size));
+    jlio::malloc((void**)&out, sizeof(jlio::PointXYZINormal) * (*out_size));
     jlio::memcpy(out, output_pt_buffer, sizeof(jlio::PointXYZINormal) * (*out_size), jlio::cudaMemcpyDeviceToDevice);
     jlio::free(output_pt_buffer);
 }

@@ -38,7 +38,7 @@
 #include <vector>
 #include <cstdlib>
 
-#include <boost/bind.hpp>
+//#include <boost/bind.hpp> // TODO did not yet find where this is actually used
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>

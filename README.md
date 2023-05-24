@@ -28,7 +28,7 @@ sudo apt install kitware-archive-keyring # keeps the keys updated
 sudo rm /etc/apt/trusted.gpg.d/kitware.gpg # delete the old one, will be auto replaced at next update
 sudo apt update # if this throws an error, "NO_PUBKEY", copy the key after and do sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key <KEY>
 
-sudo apt-get install cmake libeigen3-dev libpcl-dev libomp-dev libtbb-dev gcc-11 g++-11
+sudo apt-get install cmake libeigen3-dev libpcl-dev libomp-dev libtbb-dev libboost-dev gcc-11 g++-11
 ```
 
 - CUDA 10
@@ -40,11 +40,11 @@ If you have multiple CUDA versions installed, link `nvcc` to the version you wan
 - CPU single/multi core
 
 ### Mac OS
-- Ventura 13.4
-- Monterey 12.0
+- 12 Monterey
+- 13 Ventura
 
 ```bash
-brew install cmake eigen pcl qt5 gcc@11 tbb
+brew install cmake eigen pcl qt5 gcc@11 tbb boost
 ```
 
 - CPU single/multi core

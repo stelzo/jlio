@@ -8,10 +8,11 @@
 #include <vector>
 #endif
 
+#include <iostream>
+
 namespace jlio
 {
-    template <typename T>
-    void malloc(T **ptr, size_t size);
+    void malloc(void **ptr, size_t size);
 
     void memset(void *ptr, int value, size_t count);
 
@@ -19,7 +20,7 @@ namespace jlio
     std::vector<size_t> indexIota(size_t size);
 #endif
 
-    void memcpy(void *dst, const void *src, size_t count, int kind = 0);
+    void memcpy(void *dst, const void *src, size_t count, int kind);
 
     void free(void *ptr);
 
@@ -39,4 +40,6 @@ namespace jlio
                                             ::cudaMemcpyDeviceToDevice,
                                             ::cudaMemcpyDefault};
 #endif
+
 } // namespace jlio
+

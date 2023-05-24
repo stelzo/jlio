@@ -275,7 +275,7 @@ void krnl_raw_nearest_search(void *root, jlio::PointXYZINormal *point, size_t k_
     Nearest_Search(root, *point, k_nearest, Nearest_Points, Nearest_Points_Size, Point_Distance, Point_Distance_Size, max_dist);
 }
 
-void Raw_Nearest_Search(void *root, jlio::PointXYZINormal *point, size_t k_nearest,
+void test_nearest_search(void *root, jlio::PointXYZINormal *point, size_t k_nearest,
                         jlio::PointXYZINormal *Nearest_Points, int *Nearest_Points_Size,
                         float *Point_Distance, size_t *Point_Distance_Size,
                         float max_dist)
@@ -288,43 +288,6 @@ void Raw_Nearest_Search(void *root, jlio::PointXYZINormal *point, size_t k_neare
     krnl_raw_nearest_search(root, point, k_nearest, Nearest_Points, Nearest_Points_Size, Point_Distance, Point_Distance_Size, max_dist);
 #endif
 }
-
-/*
-void jacobian_test_cpu(double* data, Eigen::MatrixXd* target, int i)
-{
-    assert(target != nullptr);
-    assert(target->data() != nullptr);
-
-    int h_x_rows = target->rows();
-    int h_x_cols = target->cols();
-
-    Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> h_x(target->data(), h_x_rows, h_x_cols);
-    h_x.block<1, 12>(i, 0) << data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11];
-}
-
-void jacobian_test_gpu(double* data, int rows, int cols, Eigen::MatrixXd& target, int i)
-{
-    assert(data != nullptr);
-
-    rmagine::MatrixXd mdata_host(rows, cols);
-
-    double* data_gpu = nullptr;
-    cudaMalloc(&data_gpu, sizeof(double) * 12);
-    cudaMemcpy(data_gpu, data, sizeof(double) * 12, cudaMemcpyHostToDevice);
-
-    krnl_jacobian_test<<<1, 1>>>(data_gpu, mdata_host.m_data, rows, cols, i);
-    cudaDeviceSynchronize();
-    CHECK_LAST_CUDA_ERROR();
-
-    assert(mdata_host(i, 2) > 1.1);
-    assert(mdata_host(i, 2) < 1.3);
-    assert(mdata_host(i, 3) > 1.2);
-
-    mdata_host.toEigenInpl(target);
-
-    cudaFree(data_gpu);
-}
-*/
 
 JLIO_KERNEL
 void krnl_point_kf_state(void *_body_cloud, size_t body_cloud_size,
@@ -533,11 +496,10 @@ int kf_point_state_step(
     size_t selected_surf_grid_dim = static_cast<size_t>(std::ceil((float)body_cloud_size / THREADS_PER_BLOCK));
     // std::cout << "Dim " << selected_surf_grid_dim << ", " << THREADS_PER_BLOCK << std::endl;
 
-    CHECK_LAST_CUDA_ERROR();
     int *effct_feat_num = nullptr;
 
-    jlio::malloc(&effct_feat_num, sizeof(int));
-    jlio::memset(effct_feat_num, 0, sizeof(int));
+    jlio::malloc((void**)&effct_feat_num, sizeof(int));
+    jlio::memset((void*)effct_feat_num, 0, sizeof(int));
 
     int *effct_feat_num_host = nullptr;
     effct_feat_num_host = new int;

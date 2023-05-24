@@ -415,7 +415,7 @@ void KD_TREE<PointType>::Build(PointVector point_cloud)
     }
     if (point_cloud.size() == 0)
         return;
-    jlio::malloc(&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
+    jlio::malloc((void**)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
     InitTreeNode(STATIC_ROOT_NODE);
     BuildTree(&STATIC_ROOT_NODE->left_son_ptr, 0, point_cloud.size() - 1, point_cloud);
     Update(STATIC_ROOT_NODE);
@@ -433,7 +433,7 @@ void KD_TREE<PointType>::Build(PointType *point_cloud, size_t size)
     if (size == 0)
         return;
 
-    jlio::malloc(&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
+    jlio::malloc((void**)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
     InitTreeNode(STATIC_ROOT_NODE);
     BuildTree(&STATIC_ROOT_NODE->left_son_ptr, 0, size - 1, point_cloud, size);
     Update(STATIC_ROOT_NODE);
@@ -704,7 +704,7 @@ void KD_TREE<PointType>::BuildTree(KD_TREE_NODE **root, int l, int r, PointVecto
 {
     if (l > r)
         return;
-    jlio::malloc(root, sizeof(KD_TREE_NODE));
+    jlio::malloc((void**)root, sizeof(KD_TREE_NODE));
     InitTreeNode(*root);
     int mid = (l + r) >> 1;
     int div_axis = 0;
@@ -1063,7 +1063,7 @@ void KD_TREE<PointType>::Add_by_point(KD_TREE_NODE **root, PointType point, bool
 {
     if (*root == nullptr)
     {
-        jlio::malloc(root, sizeof(KD_TREE_NODE));
+        jlio::malloc((void**)root, sizeof(KD_TREE_NODE));
         InitTreeNode(*root);
         (*root)->point = point;
         (*root)->division_axis = (father_axis + 1) % 3;

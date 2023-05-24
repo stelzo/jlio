@@ -1,15 +1,14 @@
 #include <kernel/memory.h>
-#include <iostream>
+#include <kernel/point.h>
 
 namespace jlio
 {
-    template <typename T>
-    void malloc(T **ptr, size_t size)
+    void malloc(void **ptr, size_t size)
     {
 #ifdef USE_CUDA
         CHECK_CUDA_ERROR(cudaMallocManaged(ptr, size));
 #else
-        *ptr = (T *)std::malloc(size);
+        *ptr = std::malloc(size);
         if (ptr == NULL)
         {
             std::cerr << "Error allocating memory" << std::endl;
@@ -51,6 +50,11 @@ namespace jlio
 
     void free(void *ptr)
     {
+        if (ptr == NULL)
+        {
+            return;
+        }
+
 #ifdef USE_CUDA
         CHECK_CUDA_ERROR(cudaFree(ptr));
 #else
@@ -58,4 +62,6 @@ namespace jlio
 #endif
     }
 
+
 } // namespace jlio
+

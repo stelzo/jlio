@@ -1,30 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
 project(tree VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(TREE_SRC 
+  src/tree.cpp
+)
 
-find_package(Eigen3 REQUIRED)
-find_package(Threads REQUIRED)
-
-find_package(PCL 1.8 REQUIRED QUIET)
-
-include_directories(
+set(TREE_INCLUDES
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   include
   ../kernel/include
 )
 
-add_library(ikdtree
-  src/tree.cpp
-)
-target_link_libraries(ikdtree
+set(TREE_LIBS
   kernel
   ${CMAKE_THREAD_LIBS_INIT}
   ${PCL_LIBRARIES}
 )
 
-add_compile_options(-std=c++17)
-#add_compile_options(-Wall)
+if(BUILD_SHARED_LIBS)
+  add_library(${PROJECT_NAME} SHARED ${TREE_SRC})
+else()
+  add_library(${PROJECT_NAME} STATIC ${TREE_SRC})
+endif()
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${TREE_INCLUDES})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TREE_LIBS})

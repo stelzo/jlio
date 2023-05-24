@@ -27,7 +27,7 @@ namespace rmagine
 
         MatrixXxX(int numRows, int numCols) : m_numRows(numRows), m_numCols(numCols)
         {
-            jlio::malloc(&m_data, sizeof(T) * m_numRows * m_numCols);
+            jlio::malloc((void**)&m_data, sizeof(T) * m_numRows * m_numCols);
         }
 
         JLIO_INLINE_FUNCTION

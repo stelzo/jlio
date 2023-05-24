@@ -1,19 +1,13 @@
-#include <gtest/gtest.h>
-#include <ikd-Tree/ikd_Tree.h>
-
-#include <cuda-utils.h>
-#include <ikd-Tree/ikd_Tree_gpu_search.h>
-
-#include <common_lib.h>
-#include <math/common.h>
-#include <math/math.h>
-#include <math/matrixXxX.h>
-
-#include <iostream>
-
-#include <use-ikfom.hpp>
+#include <kernel/math/math.h>
+#include <kalman/kalman.h>
+#include <kernel/eigen_mapping.h>
+#include <kernel/memory.h>
+#include <Eigen/Dense>
+#include <kernel/common.h>
 
 #include <random>
+#include <iostream>
+#include <gtest/gtest.h>
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -107,8 +101,56 @@ TEST(rm_mtk_interop, vector3) {
     EXPECT_NEAR(t.z(), rm_casted.z, epsilon);
 }
 
+void jacobian_test_cpu(double* data, Eigen::MatrixXd* target, int i)
+{
+    assert(target != nullptr);
+    assert(target->data() != nullptr);
+
+    int h_x_rows = target->rows();
+    int h_x_cols = target->cols();
+
+    Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> h_x(target->data(), h_x_rows, h_x_cols);
+    h_x.block<1, 12>(i, 0) << data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11];
+}
+
+JLIO_KERNEL
+void krnl_jacobian_test(double* data, double* mat, int rows, int cols, int i)
+{
+    for(size_t j = 0; j < 12; j++)
+    {
+        mat[i + j * rows] = data[j];
+    }
+}
+
+void jacobian_test_gpu(double* data, int rows, int cols, Eigen::MatrixXd& target, int i)
+{
+    assert(data != nullptr);
+
+    rmagine::MatrixXd mdata_host(rows, cols);
+
+    double* data_gpu = nullptr;
+    jlio::malloc((void**)&data_gpu, sizeof(double) * 12);
+    jlio::memcpy((void**)data_gpu, data, sizeof(double) * 12, jlio::cudaMemcpyHostToDevice);
+
+    #ifdef USE_CUDA
+    krnl_jacobian_test<<<1, 1>>>(data_gpu, mdata_host.m_data, rows, cols, i);
+    cudaDeviceSynchronize();
+    CHECK_LAST_CUDA_ERROR();
+    #else
+    krnl_jacobian_test(data_gpu, mdata_host.m_data, rows, cols, i);
+    #endif
+
+    assert(mdata_host(i, 2) > 1.1);
+    assert(mdata_host(i, 2) < 1.3);
+    assert(mdata_host(i, 3) > 1.2);
+
+    target = toEigen(mdata_host);
+
+    jlio::free((void**)data_gpu);
+}
+
 TEST(rm_mtk_interop, eigen_block_map_cpu) {
-    Eigen::MatrixXd* h_x_p = new MatrixXd(1234, 12);
+    Eigen::MatrixXd* h_x_p = new Eigen::MatrixXd(1234, 12);
     double data[] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11};
 
     int idx = 0;
@@ -152,7 +194,7 @@ TEST(rm_mtk_interop, eigen_rm_matrixXd_interop) {
     rm_h_x(idx, 11) = data[11];
 
     //h_x_p = *(reinterpret_cast<Eigen::MatrixXd*>(&rm_h_x));
-    h_x_p = rm_h_x.toEigen();
+    h_x_p = toEigen(rm_h_x);
 
     EXPECT_NEAR(data[0], h_x_p(idx, 0), epsilon);
     EXPECT_NEAR(data[1], h_x_p(idx, 1), epsilon);
@@ -179,7 +221,7 @@ TEST(rm_mtk_interop, eigen_mat_change) {
     rmagine::MatrixXd mat(1234, 12);
     mat(1, 2) = 20.0;
 
-    EXPECT_NEAR(mat.toEigen()(1, 2), 20.0, epsilon);
+    EXPECT_NEAR(toEigen(mat)(1, 2), 20.0, epsilon);
 }
 
 TEST(rm_mtk_interop, eigen_block_gpu) {

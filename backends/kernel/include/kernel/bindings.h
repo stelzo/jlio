@@ -16,7 +16,8 @@ int step_kalman(
 
 void step_jacobian(
     bool *point_selected_surf,
-    state_ikfom *s,
+    esekfom::dyn_share_datastruct<double> &ekfom_data,
+    state_ikfom &s,
     void *_laser_cloud_ori, size_t laser_cloud_ori_size,
     void *_corr_normvect, size_t corr_normvect_size,
     size_t effct_feat_num);

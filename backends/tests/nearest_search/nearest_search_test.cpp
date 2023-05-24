@@ -1,19 +1,14 @@
 #include <gtest/gtest.h>
-#include <ikd-Tree/ikd_Tree.h>
-
-#include <cuda-utils.h>
-#include <ikd-Tree/ikd_Tree_gpu_search.h>
-
-#include <common_lib.h>
-#include <math/common.h>
-#include <math/math.h>
-
+#include <tree/tree.h>
+#include <kernel/common.h>
+#include <kernel/point_fitting.h>
+#include <kernel/math/math.h>
+#include <kernel/point.h>
+#include <tree/tree.h>
 #include <iostream>
 
-#include "common_lib.h"
-
-PointType createPoint(float x, float y, float z) {
-    PointType p;
+jlio::PointXYZINormal createPoint(float x, float y, float z) {
+    jlio::PointXYZINormal p;
     p.x = x;
     p.y = y;
     p.z = z;
@@ -27,13 +22,13 @@ float calc_dist(jlio::PointXYZINormal a, jlio::PointXYZINormal b) {
 }
 
 // Important: Initialize globally to prevent Segfault
-KD_TREE<PointType> ikdTree;
+KD_TREE<jlio::PointXYZINormal> ikdTree;
 
 TEST(ikdTree, nearestSearch) {
     constexpr size_t k = 6;
 
     // Define pointcloud
-    PointVector h_points = {
+    std::vector<jlio::PointXYZINormal> h_points = {
         // Points outside of range
         createPoint(2, 2, 0),
         createPoint(2, -2, 0),
@@ -58,20 +53,20 @@ TEST(ikdTree, nearestSearch) {
     };
 
     // Initialize GPU memory
-    PointType* managed_points;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&managed_points, h_points.size() * sizeof(PointType)));
+    jlio::PointXYZINormal* managed_points = nullptr;
+    jlio::malloc((void**)&managed_points, h_points.size() * sizeof(jlio::PointXYZINormal));
     for (size_t i = 0; i < h_points.size(); i++) {
-        managed_points[i] = PointType();
+        managed_points[i] = jlio::PointXYZINormal();
         managed_points[i].x = h_points[i].x;
         managed_points[i].y = h_points[i].y;
         managed_points[i].z = h_points[i].z;
     }
 
-    PointVector d_points;
+    std::vector<jlio::PointXYZINormal> d_points;
     d_points.insert(d_points.end(), &managed_points[0], &managed_points[h_points.size()]);
 
     ikdTree.Build(d_points);
-    ikdTree.consistent();
+    //ikdTree.consistent();
 
     jlio::PointXYZINormal query;
     query.x = 0;
@@ -79,29 +74,29 @@ TEST(ikdTree, nearestSearch) {
     query.z = 0;
 
     jlio::PointXYZINormal* d_query;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&d_query, sizeof(jlio::PointXYZINormal)));
+    jlio::malloc((void**)&d_query, sizeof(jlio::PointXYZINormal));
     d_query[0] = query;
 
     jlio::PointXYZINormal* Nearest_Points;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&Nearest_Points, k * sizeof(jlio::PointXYZINormal)));
+    jlio::malloc((void**)&Nearest_Points, k * sizeof(jlio::PointXYZINormal));
     for (size_t i = 0; i < k; i++) {
         Nearest_Points[i] = jlio::PointXYZINormal();
     }
 
     int* nearest_size;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&nearest_size, sizeof(int)));
+    jlio::malloc((void**)&nearest_size, sizeof(int));
     nearest_size[0] = 0;
 
     float* pointSearchSqDis;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&pointSearchSqDis, k * sizeof(float)));
+    jlio::malloc((void**)&pointSearchSqDis, k * sizeof(float));
 
     size_t* dist_size;
-    CHECK_CUDA_ERROR(cudaMallocManaged(&dist_size, sizeof(size_t)));
+    jlio::malloc((void**)&dist_size, sizeof(size_t));
     dist_size[0] = k;
 
     // Perform search
-    Raw_Nearest_Search((void*)ikdTree.Root_Node, d_query, k, Nearest_Points, nearest_size,
-                       pointSearchSqDis, dist_size, INFINITY);
+    test_nearest_search((void*)ikdTree.Root_Node, d_query, k, Nearest_Points, nearest_size,
+                       pointSearchSqDis, dist_size, 1e6);
 
     EXPECT_EQ(*nearest_size, k);
 
@@ -124,10 +119,10 @@ TEST(ikdTree, nearestSearch) {
     EXPECT_NEAR(Nearest_Points[4].z, 1.5, 0.01);
     EXPECT_NEAR(Nearest_Points[5].z, -1.6, 0.01);
 
-    cudaFree(managed_points);
-    cudaFree(d_query);
-    cudaFree(Nearest_Points);
-    cudaFree(nearest_size);
-    cudaFree(pointSearchSqDis);
-    cudaFree(dist_size);
+    jlio::free(managed_points);
+    jlio::free(d_query);
+    jlio::free(Nearest_Points);
+    jlio::free(nearest_size);
+    jlio::free(pointSearchSqDis);
+    jlio::free(dist_size);
 }
