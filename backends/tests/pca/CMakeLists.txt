@@ -17,12 +17,9 @@ set(TEST_INCLUDES
   ${PCL_INCLUDE_DIRS}
 )
 
-if(TBB_FOUND)
+if(WITH_THREADING)
   list(APPEND TEST_LINKS
     TBB::tbb
-  )
-  list(APPEND TEST_INCLUDES
-    ${TBB_INCLUDE_DIRS}
   )
 endif()
 

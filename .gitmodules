@@ -1,0 +1,6 @@
+[submodule "ext/tbb/oneTBB"]
+	path = ext/tbb/oneTBB
+	url = https://github.com/oneapi-src/oneTBB
+[submodule "ext/gtest/googletest"]
+	path = ext/gtest/googletest
+	url = https://github.com/google/googletest

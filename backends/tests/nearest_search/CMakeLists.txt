@@ -12,12 +12,9 @@ set(TEST_LINKS
   tree
 )
 
-if(TBB_FOUND)
+if(WITH_THREADING)
   list(APPEND TEST_LINKS
     TBB::tbb
-  )
-  list(APPEND TEST_INCLUDES
-    ${TBB_INCLUDE_DIRS}
   )
 endif()
 
@@ -52,3 +49,4 @@ add_executable(${TEST_TARGET} ${TEST_SRC})
 target_link_libraries(${TEST_TARGET} ${TEST_LINKS})
 target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDES})
 gtest_discover_tests(${TEST_TARGET})
+add_dependencies(${TEST_TARGET} kernel tree)

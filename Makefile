@@ -63,4 +63,4 @@ clean:
 	@$(MAKE) -C $(BUILD_DIR) clean $(MAKE_FLAGS)
 	@rm -rf $(BUILD_DIR)
 
-.PHONY: all all-dev all-release clean all-cpu all-cuda all-cpu-single-release all-cpu-full-release all-cpu-single-dev all-cpu-full-dev all-cuda-dev
+.PHONY: all all-dev all-release clean all-cpu all-cuda all-cpu-single-release all-cpu-full-release all-cpu-single-dev all-cpu-full-dev all-cuda-dev test

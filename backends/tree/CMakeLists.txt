@@ -27,3 +27,4 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${TREE_INCLUDES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${TREE_LIBS})
+add_dependencies(${PROJECT_NAME} kernel)
