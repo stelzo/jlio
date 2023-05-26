@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.17)
 project(jlio-backends VERSION 0.1.0)
 
 find_package(Threads)
@@ -20,8 +20,13 @@ if(WITH_CUDA AND CUDAToolkit_FOUND)
 
     add_definitions(-DUSE_CUDA) # used in the source code
     if(NOT DEFINED CMAKE_CUDA_STANDARD)
-      set(CMAKE_CUDA_STANDARD 11)
+      set(CMAKE_CUDA_STANDARD 14)
       set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    endif()
+
+    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+      message(STATUS "Running on ARM, assuming a NVIDIA Jetson and setting CUDA target include directories.")
+      set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS} /usr/local/cuda/targets/${CMAKE_SYSTEM_PROCESSOR}-linux/include/)
     endif()
 
     set(CMAKE_CUDA_ARCHITECTURES 75)

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 set(TEST_TARGET pca_test)
 project(${TEST_TARGET} CXX)
 
+remove_definitions(-DUSE_CUDA)
+
 set(TEST_SRC
   ${TEST_TARGET}.cpp
 )
@@ -34,4 +36,4 @@ list(APPEND TEST_INCLUDES
 add_executable(${TEST_TARGET} ${TEST_SRC})
 target_link_libraries(${TEST_TARGET} ${TEST_LINKS})
 target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDES})
-gtest_discover_tests(${TEST_TARGET})
+gtest_discover_tests(${TEST_TARGET} PROPERTIES TIMEOUT 600)

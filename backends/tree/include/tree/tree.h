@@ -1,7 +1,6 @@
 #pragma once
 #include <math.h>
 #include <memory.h>
-#include <pcl/point_types.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <time.h>
@@ -12,6 +11,7 @@
 #include <chrono>
 #include <queue>
 #include <kernel/memory.h>
+#include <memory>
 
 #define EPSS 1e-6
 #define Minimal_Unbalanced_Tree_Size 10

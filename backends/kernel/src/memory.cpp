@@ -41,8 +41,29 @@ namespace jlio
     void memcpy(void *dst, const void *src, size_t count, int kind)
     {
 #ifdef USE_CUDA
-        CHECK_CUDA_ERROR(cudaMemcpy(dst, src, count, jlio::cudaMemcpyKindMap[kind]));
-        //dst = src; // TODO only on jetson: no need to copy to and from device when using unified memory; but just assigning the pointer would make free fail
+        ::cudaMemcpyKind _kind;
+        switch (kind)
+        {
+        case 0:
+            _kind = ::cudaMemcpyHostToHost;
+            break;
+        case 1:
+            _kind = ::cudaMemcpyHostToDevice;
+            break;
+        case 2:
+            _kind = ::cudaMemcpyDeviceToHost;
+            break;
+        case 3:
+            _kind = ::cudaMemcpyDeviceToDevice;
+            break;
+        case 4:
+            _kind = ::cudaMemcpyDefault;
+            break;
+        default:
+            _kind = ::cudaMemcpyDefault;
+        }
+        CHECK_CUDA_ERROR(cudaMemcpy(dst, src, count, _kind));
+        // dst = src; // TODO only on jetson: no need to copy to and from device when using unified memory; but just assigning the pointer would make free fail
 #else
         std::memcpy(dst, src, count);
 #endif
@@ -62,6 +83,4 @@ namespace jlio
 #endif
     }
 
-
 } // namespace jlio
-

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#include <rm_mtk_interop_test_no_eigen.h>
+
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<double> distrib(-1.0, 1.0);
@@ -26,8 +28,9 @@ Eigen::Quaterniond Random_Quaternion()
 
 /**
  * Testing interop with MTK structs. Rmagine structs work reliable on the GPU, while Eigen does not.
-*/
-TEST(rm_mtk_interop, quat) {
+ */
+TEST(rm_mtk_interop, quat)
+{
     auto rquat = Random_Quaternion();
 
     SO3 rot(rquat.w(), rquat.x(), rquat.y(), rquat.z());
@@ -79,7 +82,7 @@ TEST(rm_mtk_interop, quat) {
     EXPECT_NEAR(norm_quat.normalized().x(), rm_norm_quat.normalized().x, epsilon);
     EXPECT_NEAR(norm_quat.normalized().y(), rm_norm_quat.normalized().y, epsilon);
     EXPECT_NEAR(norm_quat.normalized().z(), rm_norm_quat.normalized().z, epsilon);
-    
+
     // reinterpret cast
     /*norm_quat = Random_Quaternion();
     rmagine::Quaterniond rm_casted = *(reinterpret_cast<rmagine::Quaterniond*>(&norm_quat));
@@ -90,18 +93,19 @@ TEST(rm_mtk_interop, quat) {
     EXPECT_NEAR(norm_quat.z(), rm_casted.z, epsilon);*/
 }
 
-TEST(rm_mtk_interop, vector3) {
+TEST(rm_mtk_interop, vector3)
+{
     // reinterpret cast
     auto norm_quat = Random_Quaternion();
     vect3 t(Eigen::Vector3d(norm_quat.x(), norm_quat.y(), norm_quat.z()));
-    rmagine::Vector3d rm_casted = *(reinterpret_cast<rmagine::Vector3d*>(&t));
+    rmagine::Vector3d rm_casted = *(reinterpret_cast<rmagine::Vector3d *>(&t));
 
     EXPECT_NEAR(t.x(), rm_casted.x, epsilon);
     EXPECT_NEAR(t.y(), rm_casted.y, epsilon);
     EXPECT_NEAR(t.z(), rm_casted.z, epsilon);
 }
 
-void jacobian_test_cpu(double* data, Eigen::MatrixXd* target, int i)
+void jacobian_test_cpu(double *data, Eigen::MatrixXd *target, int i)
 {
     assert(target != nullptr);
     assert(target->data() != nullptr);
@@ -113,44 +117,22 @@ void jacobian_test_cpu(double* data, Eigen::MatrixXd* target, int i)
     h_x.block<1, 12>(i, 0) << data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11];
 }
 
-JLIO_KERNEL
-void krnl_jacobian_test(double* data, double* mat, int rows, int cols, int i)
-{
-    for(size_t j = 0; j < 12; j++)
-    {
-        mat[i + j * rows] = data[j];
-    }
-}
-
-void jacobian_test_gpu(double* data, int rows, int cols, Eigen::MatrixXd& target, int i)
+void jacobian_test_gpu(double *data, int rows, int cols, Eigen::MatrixXd &target, int i)
 {
     assert(data != nullptr);
 
-    rmagine::MatrixXd mdata_host(rows, cols);
-
-    double* data_gpu = nullptr;
-    jlio::malloc((void**)&data_gpu, sizeof(double) * 12);
-    jlio::memcpy((void**)data_gpu, data, sizeof(double) * 12, jlio::cudaMemcpyHostToDevice);
-
-    #ifdef USE_CUDA
-    krnl_jacobian_test<<<1, 1>>>(data_gpu, mdata_host.m_data, rows, cols, i);
-    cudaDeviceSynchronize();
-    CHECK_LAST_CUDA_ERROR();
-    #else
-    krnl_jacobian_test(data_gpu, mdata_host.m_data, rows, cols, i);
-    #endif
+    rmagine::MatrixXd mdata_host = jacobian_test_gpu_internal(data, rows, cols, i);
 
     assert(mdata_host(i, 2) > 1.1);
     assert(mdata_host(i, 2) < 1.3);
     assert(mdata_host(i, 3) > 1.2);
 
     target = toEigen(mdata_host);
-
-    jlio::free((void**)data_gpu);
 }
 
-TEST(rm_mtk_interop, eigen_block_map_cpu) {
-    Eigen::MatrixXd* h_x_p = new Eigen::MatrixXd(1234, 12);
+TEST(rm_mtk_interop, eigen_block_map_cpu)
+{
+    Eigen::MatrixXd *h_x_p = new Eigen::MatrixXd(1234, 12);
     double data[] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11};
 
     int idx = 0;
@@ -173,7 +155,8 @@ TEST(rm_mtk_interop, eigen_block_map_cpu) {
     EXPECT_NEAR(data[11], h_x(idx, 11), epsilon);
 }
 
-TEST(rm_mtk_interop, eigen_rm_matrixXd_interop) {
+TEST(rm_mtk_interop, eigen_rm_matrixXd_interop)
+{
     Eigen::MatrixXd h_x_p;
     double data[] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11};
 
@@ -193,7 +176,7 @@ TEST(rm_mtk_interop, eigen_rm_matrixXd_interop) {
     rm_h_x(idx, 10) = data[10];
     rm_h_x(idx, 11) = data[11];
 
-    //h_x_p = *(reinterpret_cast<Eigen::MatrixXd*>(&rm_h_x));
+    // h_x_p = *(reinterpret_cast<Eigen::MatrixXd*>(&rm_h_x));
     h_x_p = toEigen(rm_h_x);
 
     EXPECT_NEAR(data[0], h_x_p(idx, 0), epsilon);
@@ -212,7 +195,8 @@ TEST(rm_mtk_interop, eigen_rm_matrixXd_interop) {
     EXPECT_NEAR(0.0, h_x_p(idx + 1, 11), epsilon);
 }
 
-TEST(rm_mtk_interop, eigen_mat_change) {
+TEST(rm_mtk_interop, eigen_mat_change)
+{
     Eigen::MatrixXd h_x(1234, 12);
 
     h_x(1, 2) = 20.0;
@@ -224,7 +208,8 @@ TEST(rm_mtk_interop, eigen_mat_change) {
     EXPECT_NEAR(toEigen(mat)(1, 2), 20.0, epsilon);
 }
 
-TEST(rm_mtk_interop, eigen_block_gpu) {
+TEST(rm_mtk_interop, eigen_block_gpu)
+{
     Eigen::MatrixXd h_x(1234, 12);
     double data[] = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11};
 

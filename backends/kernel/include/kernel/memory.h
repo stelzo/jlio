@@ -33,13 +33,5 @@ namespace jlio
         cudaMemcpyDefault = 4
     };
 
-#ifdef USE_CUDA
-    ::cudaMemcpyKind cudaMemcpyKindMap[] = {::cudaMemcpyHostToHost,
-                                            ::cudaMemcpyHostToDevice,
-                                            ::cudaMemcpyDeviceToHost,
-                                            ::cudaMemcpyDeviceToDevice,
-                                            ::cudaMemcpyDefault};
-#endif
-
 } // namespace jlio
 

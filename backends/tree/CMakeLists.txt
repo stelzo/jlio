@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(tree VERSION 0.1.0)
 
+remove_definitions(-DUSE_CUDA)
+
 set(TREE_SRC 
   src/tree.cpp
 )
@@ -17,6 +19,12 @@ set(TREE_LIBS
   ${CMAKE_THREAD_LIBS_INIT}
   ${PCL_LIBRARIES}
 )
+
+if(WITH_THREADING)
+  list(APPEND TREE_LIBS
+    TBB::tbb
+  )
+endif()
 
 if(BUILD_SHARED_LIBS)
   add_library(${PROJECT_NAME} SHARED ${TREE_SRC})

@@ -25,6 +25,18 @@ namespace rmagine
             }
         }
 
+        MatrixXxX(const MatrixXxX &other) : m_numRows(other.m_numRows), m_numCols(other.m_numCols)
+        {
+            jlio::malloc((void **)&m_data, sizeof(T) * m_numRows * m_numCols);
+            jlio::memcpy((void **)m_data, other.m_data, sizeof(T) * m_numRows * m_numCols, jlio::cudaMemcpyDeviceToDevice);
+        }
+
+        MatrixXxX(MatrixXxX &&other) : m_numRows(other.m_numRows), m_numCols(other.m_numCols)
+        {
+            m_data = other.m_data;
+            other.m_data = nullptr;
+        }
+
         MatrixXxX(int numRows, int numCols) : m_numRows(numRows), m_numCols(numCols)
         {
             jlio::malloc((void**)&m_data, sizeof(T) * m_numRows * m_numCols);

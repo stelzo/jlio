@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.17)
 project(jlio VERSION 0.1.0)
 
 option(WITH_TESTS "Build tests" ON)
@@ -45,3 +45,4 @@ endif()
 if(WITH_BACKENDS)
   add_subdirectory(backends)
 endif()
+

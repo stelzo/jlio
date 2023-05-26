@@ -12,6 +12,7 @@ set(KERNEL_SRC
   src/memory.cpp
   src/point_jacobian.cpp
   src/point_fitting.cpp
+  src/common.cpp
 )
 
 set(KERNEL_INCLUDES 
@@ -21,7 +22,10 @@ set(KERNEL_INCLUDES
 
 if(CMAKE_CUDA_COMPILER)
   include_directories(${CUDA_INCLUDE_DIRS})
-  set_source_files_properties(src/point_jacobian.cpp src/point_fitting.cpp PROPERTIES LANGUAGE CUDA)
+  set_source_files_properties(src/common.cpp src/point_jacobian.cpp src/point_fitting.cpp src/preprocess.cpp PROPERTIES LANGUAGE CUDA)
+  list(APPEND KERNEL_LINK_LIBS
+    CUDA::cudart
+  )
 else()
   if(WITH_THREADING)
     list(APPEND KERNEL_LINK_LIBS

@@ -25,6 +25,7 @@ set(TEST_INCLUDES
 )
 
 if(CMAKE_CUDA_COMPILER)
+  add_definitions(-DUSE_CUDA)
   set_source_files_properties(${PROJECT_NAME}.cpp PROPERTIES LANGUAGE CUDA)
 
   list(APPEND TEST_LINKS 
@@ -36,11 +37,9 @@ if(CMAKE_CUDA_COMPILER)
 else()
   list(APPEND TEST_LINKS
     Eigen3::Eigen
-    ${PCL_LIBRARIES}
   )
   list(APPEND TEST_INCLUDES
     ${Eigen3_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
   )
 endif()
 
@@ -48,5 +47,5 @@ endif()
 add_executable(${TEST_TARGET} ${TEST_SRC})
 target_link_libraries(${TEST_TARGET} ${TEST_LINKS})
 target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDES})
-gtest_discover_tests(${TEST_TARGET})
+gtest_discover_tests(${TEST_TARGET} PROPERTIES TIMEOUT 600)
 add_dependencies(${TEST_TARGET} kernel tree)

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(kalman VERSION 0.1.0)
 
+remove_definitions(-DUSE_CUDA)
+
 add_library(kalman INTERFACE)
 target_include_directories(kalman INTERFACE
   include
