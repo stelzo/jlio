@@ -29,7 +29,7 @@ if(WITH_CUDA AND CUDAToolkit_FOUND)
       set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS} /usr/local/cuda/targets/${CMAKE_SYSTEM_PROCESSOR}-linux/include/)
     endif()
 
-    set(CMAKE_CUDA_ARCHITECTURES 75)
+    set(CMAKE_CUDA_ARCHITECTURES 72)
 
     enable_language(CUDA)
 else()

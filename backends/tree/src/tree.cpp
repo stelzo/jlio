@@ -1,6 +1,8 @@
 #include <tree/tree.h>
 #include <pcl/point_types.h>
 #include <kernel/point.h>
+#include <pcl/point_types.h>
+#include <kernel/point.h>
 
 /*
  * Description: ikd-Tree: an incremental k-d tree for robotic applications
@@ -417,7 +419,7 @@ void KD_TREE<PointType>::Build(PointVector point_cloud)
     }
     if (point_cloud.size() == 0)
         return;
-    jlio::malloc((void**)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
+    jlio::malloc((void **)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
     InitTreeNode(STATIC_ROOT_NODE);
     BuildTree(&STATIC_ROOT_NODE->left_son_ptr, 0, point_cloud.size() - 1, point_cloud);
     Update(STATIC_ROOT_NODE);
@@ -435,7 +437,7 @@ void KD_TREE<PointType>::Build(PointType *point_cloud, size_t size)
     if (size == 0)
         return;
 
-    jlio::malloc((void**)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
+    jlio::malloc((void **)&STATIC_ROOT_NODE, sizeof(KD_TREE_NODE));
     InitTreeNode(STATIC_ROOT_NODE);
     BuildTree(&STATIC_ROOT_NODE->left_son_ptr, 0, size - 1, point_cloud, size);
     Update(STATIC_ROOT_NODE);
@@ -706,7 +708,7 @@ void KD_TREE<PointType>::BuildTree(KD_TREE_NODE **root, int l, int r, PointVecto
 {
     if (l > r)
         return;
-    jlio::malloc((void**)root, sizeof(KD_TREE_NODE));
+    jlio::malloc((void **)root, sizeof(KD_TREE_NODE));
     InitTreeNode(*root);
     int mid = (l + r) >> 1;
     int div_axis = 0;
@@ -1065,7 +1067,7 @@ void KD_TREE<PointType>::Add_by_point(KD_TREE_NODE **root, PointType point, bool
 {
     if (*root == nullptr)
     {
-        jlio::malloc((void**)root, sizeof(KD_TREE_NODE));
+        jlio::malloc((void **)root, sizeof(KD_TREE_NODE));
         InitTreeNode(*root);
         (*root)->point = point;
         (*root)->division_axis = (father_axis + 1) % 3;
@@ -1169,7 +1171,7 @@ void KD_TREE<PointType>::Search(KD_TREE_NODE *root, int k_nearest, PointType poi
     int cur_search_counter;
     float dist_left_node = calc_box_dist(root->left_son_ptr, point);
     float dist_right_node = calc_box_dist(root->right_son_ptr, point);
-    if (q.size() < k_nearest || dist_left_node < q.top().dist && dist_right_node < q.top().dist)
+    if (q.size() < k_nearest || (dist_left_node < q.top().dist && dist_right_node < q.top().dist))
     {
         if (dist_left_node <= dist_right_node)
         {

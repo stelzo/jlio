@@ -14,21 +14,20 @@ There are frontends and backends. Backends are organized in libraries marking th
 - Ubuntu 20.04
 - Ubuntu 22.04
 
-We require a newer cmake and gcc versions than normally distributed on Ubuntu systems for proper CUDA detection.
+We require a newer cmake version than normally distributed on Ubuntu systems for proper CUDA detection.
 ```bash
 # add the cmake apt repo
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
 
-# if gcc-11 is not available on your distro, add it via
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt update
-
+# optional begin
 sudo apt install kitware-archive-keyring # keeps the keys updated
 sudo rm /etc/apt/trusted.gpg.d/kitware.gpg # delete the old one, will be auto replaced at next update
+# optional end
+
 sudo apt update # if this throws an error, "NO_PUBKEY", copy the key after and do sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key <KEY>
 
-sudo apt-get install cmake libeigen3-dev libpcl-dev libomp-dev libtbb-dev libboost-dev gcc-11 g++-11
+sudo apt-get install cmake libeigen3-dev libpcl-dev libomp-dev libtbb-dev libboost-dev clang clang++
 ```
 
 - CUDA 10
@@ -44,7 +43,7 @@ If you have multiple CUDA versions installed, link `nvcc` to the version you wan
 - 13 Ventura
 
 ```bash
-brew install cmake eigen pcl qt5 gcc@11 tbb boost
+brew install cmake eigen pcl qt5 llvm tbb boost
 ```
 
 - CPU single/multi core
@@ -62,6 +61,7 @@ The script will auto-detect CUDA and fall back to CPU threadpools.
 git clone git@github.com:stelzo/jlio.git
 cd jlio
 make
+cd build && ctest # check if everything works
 ```
 If you wish to enforce CPU builds on CUDA enabled devices, use `make all-cpu`.
 

@@ -26,7 +26,6 @@ set(TEST_INCLUDES
 
 if(CMAKE_CUDA_COMPILER)
   add_definitions(-DUSE_CUDA)
-  set_source_files_properties(${PROJECT_NAME}.cpp PROPERTIES LANGUAGE CUDA)
 
   list(APPEND TEST_LINKS 
     ${CUDA_LIBRARIES}

@@ -25,7 +25,7 @@ include(GNUInstallDirs)
 set(NEEDED_TBB_VERSION 2021.9.0) # 2020.1
 
 if(WITH_THREADING)
-  add_definitions(-DUSE_THREADING)
+  add_definitions(-DUSE_THREADING=1)
   find_package(TBB ${NEEDED_TBB_VERSION})
   if(TBB_FOUND)
       message(STATUS "TBB ${NEEDED_TBB_VERSION} found.")

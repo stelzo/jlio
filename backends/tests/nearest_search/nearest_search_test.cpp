@@ -5,7 +5,6 @@
 #include <kernel/math/math.h>
 #include <kernel/point.h>
 #include <tree/tree.h>
-#include <iostream>
 
 jlio::PointXYZINormal createPoint(float x, float y, float z) {
     jlio::PointXYZINormal p;
