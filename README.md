@@ -9,10 +9,10 @@ There are frontends and backends. Backends are organized in libraries marking th
 
 ### Backends
 
-### Linux
-- Ubuntu 18.04
-- Ubuntu 20.04
-- Ubuntu 22.04
+### Ubuntu (L4T)
+- 18.04
+- 20.04
+- 22.04
 
 We require a newer cmake version than normally distributed on Ubuntu systems for proper CUDA detection.
 ```bash
@@ -43,7 +43,7 @@ If you have multiple CUDA versions installed, link `nvcc` to the version you wan
 - 13 Ventura
 
 ```bash
-brew install cmake eigen pcl qt5 llvm tbb boost
+brew install cmake eigen pcl qt5 gcc@11 tbb boost
 ```
 
 - CPU single/multi core

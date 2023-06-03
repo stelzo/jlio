@@ -39,5 +39,5 @@ list(APPEND TEST_INCLUDES
 add_executable(${TEST_TARGET} ${TEST_SRC})
 target_link_libraries(${TEST_TARGET} ${TEST_LINKS} interop_test_helper)
 target_include_directories(${TEST_TARGET} PRIVATE ${TEST_INCLUDES})
-gtest_discover_tests(${TEST_TARGET} PROPERTIES TIMEOUT 600)
+gtest_add_tests(TARGET ${TEST_TARGET})
 add_dependencies(${TEST_TARGET} kernel interop_test_helper)

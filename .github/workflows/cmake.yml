@@ -37,11 +37,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_C_COMPILER=gcc-$GCC_VERSION -DCMAKE_CXX_COMPILER=g++-$GCC_VERSION -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_TESTS=true -Wno-dev
-
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --parallel $JOBS
+        run: make all-dev
 
       - name: Test
         run: cd ${{github.workspace}}/build && ctest -V
